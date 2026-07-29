@@ -1,4 +1,4 @@
 git add .
-git commit -m "feat(v1.104): add print statements, batch entry, auto-backups, and theme switcher"
-git tag v1.104
+git commit -m "feat(v1.105): add QR payments, analytics, bulk operations, and schema validation"
+git tag v1.105
 git push origin main --tags
