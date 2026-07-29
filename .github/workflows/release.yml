@@ -32,12 +32,12 @@ jobs:
         run: npm install
 
       - name: build tauri app and publish release
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'DuoTab v__VERSION__'
-          releaseBody: 'Download the compiled Windows executable (.exe) below.'
+          releaseName: 'DuoTab v1.101'
+          releaseBody: 'Release v1.101: Features category tagging, custom split ratios, CSV export, precision rounding fixes, and performance optimizations.'
           releaseDraft: false
           prerelease: false

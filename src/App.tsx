@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Trash2, AlertCircle, RefreshCw, Wallet, Scale } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Trash2, AlertCircle, RefreshCw, Wallet, Scale, Download } from 'lucide-react';
 import { cn } from './utils';
 
 type Transaction = {
@@ -7,13 +7,17 @@ type Transaction = {
   desc: string;
   amount: number;
   paidBy: 'A' | 'B';
+  category: string;
   date: number;
 };
+
+const CATEGORIES = ["Groceries", "Dining", "Bills", "Travel", "Entertainment", "Other"];
 
 export default function App() {
   const [partnerA, setPartnerA] = useState(() => localStorage.getItem('partnerA') || 'You');
   const [partnerB, setPartnerB] = useState(() => localStorage.getItem('partnerB') || 'Partner');
   const [threshold, setThreshold] = useState(() => Number(localStorage.getItem('threshold')) || 100);
+  const [splitRatio, setSplitRatio] = useState(() => Number(localStorage.getItem('splitRatio')) || 50); // A's percentage
   
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
     const saved = localStorage.getItem('transactions');
@@ -22,27 +26,59 @@ export default function App() {
 
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('Other');
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     localStorage.setItem('partnerA', partnerA);
     localStorage.setItem('partnerB', partnerB);
     localStorage.setItem('threshold', threshold.toString());
+    localStorage.setItem('splitRatio', splitRatio.toString());
     localStorage.setItem('transactions', JSON.stringify(transactions));
-  }, [partnerA, partnerB, threshold, transactions]);
+  }, [partnerA, partnerB, threshold, splitRatio, transactions]);
 
-  const netBalance = transactions.reduce((acc, tx) => {
-    return acc + (tx.paidBy === 'A' ? tx.amount / 2 : -tx.amount / 2);
-  }, 0);
+  // Use useMemo for heavy ledger calculations
+  const netBalance = useMemo(() => {
+    const rawBalance = transactions.reduce((acc, tx) => {
+      if (tx.category === 'Settlement') {
+        return acc + (tx.paidBy === 'A' ? tx.amount : -tx.amount);
+      }
+      const val = tx.paidBy === 'A' 
+        ? tx.amount * ((100 - splitRatio) / 100) 
+        : -tx.amount * (splitRatio / 100);
+      return acc + val;
+    }, 0);
+    return Math.round((rawBalance + Number.EPSILON) * 100) / 100;
+  }, [transactions, splitRatio]);
+
+  const maxScale = useMemo(() => Math.max(threshold, Math.abs(netBalance) + 10), [threshold, netBalance]);
+  
+  const filteredTransactions = useMemo(() => {
+    if (categoryFilter === 'All') return transactions;
+    return transactions.filter(tx => tx.category === categoryFilter);
+  }, [transactions, categoryFilter]);
 
   const isBreakerActive = Math.abs(netBalance) >= threshold;
 
   const handleAdd = (paidBy: 'A' | 'B') => {
-    if (!desc || !amount || isNaN(Number(amount))) return;
+    const numAmount = Number(amount);
+    if (!desc.trim()) {
+      setError('Description cannot be empty');
+      return;
+    }
+    if (!amount || isNaN(numAmount) || numAmount <= 0) {
+      setError('Amount must be greater than $0');
+      return;
+    }
+    setError('');
+
     const tx: Transaction = {
       id: crypto.randomUUID(),
-      desc,
-      amount: Number(amount),
+      desc: desc.trim(),
+      amount: Math.round((numAmount + Number.EPSILON) * 100) / 100,
       paidBy,
+      category,
       date: Date.now(),
     };
     setTransactions([tx, ...transactions]);
@@ -59,14 +95,33 @@ export default function App() {
     const settleTx: Transaction = {
       id: crypto.randomUUID(),
       desc: 'Settlement',
-      amount: Math.abs(netBalance) * 2,
+      amount: Math.abs(netBalance),
       paidBy: netBalance > 0 ? 'B' : 'A',
+      category: 'Settlement',
       date: Date.now(),
     };
     setTransactions([settleTx, ...transactions]);
   };
 
-  const maxScale = Math.max(threshold, Math.abs(netBalance) + 10);
+  const handleExport = () => {
+    const header = "Date,Description,Amount,Category,Paid By\n";
+    const rows = transactions.map(tx => {
+      const dateStr = new Date(tx.date).toLocaleDateString();
+      const payer = tx.paidBy === 'A' ? partnerA : partnerB;
+      // Quote strings to handle commas
+      return `"${dateStr}","${tx.desc.replace(/"/g, '""')}","${tx.amount.toFixed(2)}","${tx.category}","${payer}"`;
+    }).join("\n");
+    
+    const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "duotab_ledger.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const percentage = 50 + (netBalance / maxScale) * 50;
   
   let bannerText = "All settled up!";
@@ -77,27 +132,41 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6 flex justify-center selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6 flex justify-center selection:bg-indigo-500/30 font-sans">
       <div className="w-full max-w-2xl space-y-6">
         
+        {/* Header & Settings */}
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 backdrop-blur-sm shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold flex items-center gap-2 text-indigo-400">
               <Scale className="w-6 h-6" /> DuoTab
             </h1>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-zinc-400">Threshold $</span>
-              <input 
-                type="number"
-                value={threshold}
-                onChange={(e) => setThreshold(Number(e.target.value))}
-                className="w-20 bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-              />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-zinc-400" title="Your Split %">Split %</span>
+                <input 
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={splitRatio}
+                  onChange={(e) => setSplitRatio(Math.min(100, Math.max(0, Number(e.target.value))))}
+                  className="w-16 bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-zinc-400">Threshold $</span>
+                <input 
+                  type="number"
+                  value={threshold}
+                  onChange={(e) => setThreshold(Number(e.target.value))}
+                  className="w-20 bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                />
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-zinc-500 uppercase font-semibold mb-1 block">Partner A</label>
+              <label className="text-xs text-zinc-500 uppercase font-semibold mb-1 block">Partner A ({splitRatio}%)</label>
               <input 
                 value={partnerA}
                 onChange={(e) => setPartnerA(e.target.value)}
@@ -105,7 +174,7 @@ export default function App() {
               />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 uppercase font-semibold mb-1 block">Partner B</label>
+              <label className="text-xs text-zinc-500 uppercase font-semibold mb-1 block">Partner B ({100 - splitRatio}%)</label>
               <input 
                 value={partnerB}
                 onChange={(e) => setPartnerB(e.target.value)}
@@ -115,6 +184,7 @@ export default function App() {
           </div>
         </div>
 
+        {/* Tug of War Scale */}
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 shadow-xl text-center relative overflow-hidden">
           <h2 className="text-lg font-medium mb-2">{bannerText}</h2>
           
@@ -131,28 +201,39 @@ export default function App() {
           </div>
         </div>
 
+        {/* Circuit Breaker Alert */}
         {isBreakerActive && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 flex items-center justify-between animate-pulse">
+          <div className="bg-red-500/10 border-2 border-red-500/50 rounded-2xl p-4 flex items-center justify-between animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.2)]">
             <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-400" />
-              <p className="text-red-400 font-medium text-sm">Settlement threshold reached!</p>
+              <AlertCircle className="w-6 h-6 text-red-500" />
+              <p className="text-red-400 font-semibold text-sm">Settlement threshold reached! Time to square up.</p>
             </div>
             <button 
               onClick={handleSettle}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors"
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors shadow-lg shadow-red-500/20"
             >
               <RefreshCw className="w-4 h-4" /> Settle Up ($0)
             </button>
           </div>
         )}
 
+        {/* Quick Add Form */}
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 shadow-xl">
-          <h3 className="text-sm font-semibold text-zinc-400 mb-4 uppercase tracking-wider">Log Expense</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Log Expense</h3>
+          </div>
+          
+          {error && (
+            <div className="mb-4 bg-red-500/10 border border-red-500/30 text-red-400 px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" /> {error}
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <input 
               placeholder="What was it for?" 
               value={desc}
-              onChange={(e) => setDesc(e.target.value)}
+              onChange={(e) => { setDesc(e.target.value); setError(''); }}
               className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 outline-none transition-all"
             />
             <div className="relative">
@@ -161,10 +242,17 @@ export default function App() {
                 type="number"
                 placeholder="0.00" 
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => { setAmount(e.target.value); setError(''); }}
                 className="w-full sm:w-32 bg-zinc-950 border border-zinc-800 rounded-lg pl-8 pr-4 py-2 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 outline-none transition-all"
               />
             </div>
+            <select 
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 outline-none transition-all text-zinc-300"
+            >
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <button 
@@ -182,24 +270,53 @@ export default function App() {
           </div>
         </div>
 
+        {/* Ledger */}
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 shadow-xl flex-1">
-          <h3 className="text-sm font-semibold text-zinc-400 mb-4 uppercase tracking-wider">Recent Activity</h3>
-          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-            {transactions.length === 0 ? (
-              <p className="text-zinc-600 text-center py-8 text-sm">No expenses logged yet.</p>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Recent Activity</h3>
+            <div className="flex items-center gap-3">
+              <select 
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1 text-xs text-zinc-400 outline-none"
+              >
+                <option value="All">All Categories</option>
+                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                <option value="Settlement">Settlements</option>
+              </select>
+              <button 
+                onClick={handleExport}
+                className="text-zinc-400 hover:text-zinc-200 p-1 rounded-md transition-colors"
+                title="Export CSV"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            {filteredTransactions.length === 0 ? (
+              <p className="text-zinc-600 text-center py-8 text-sm">No expenses found.</p>
             ) : (
-              transactions.map(tx => (
+              filteredTransactions.map(tx => (
                 <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl bg-zinc-950/50 border border-zinc-800/50 hover:border-zinc-700 transition-colors group">
                   <div className="flex items-center gap-4">
                     <div className={cn(
                       "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm",
+                      tx.category === 'Settlement' ? "bg-emerald-500/20 text-emerald-400" :
                       tx.paidBy === 'A' ? "bg-indigo-500/20 text-indigo-400" : "bg-rose-500/20 text-rose-400"
                     )}>
-                      {tx.paidBy === 'A' ? partnerA[0] : partnerB[0]}
+                      {tx.category === 'Settlement' ? '✓' : (tx.paidBy === 'A' ? partnerA[0] : partnerB[0])}
                     </div>
                     <div>
                       <p className="font-medium text-zinc-200">{tx.desc}</p>
-                      <p className="text-xs text-zinc-500">{new Date(tx.date).toLocaleDateString()} • {tx.paidBy === 'A' ? partnerA : partnerB} paid</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs text-zinc-500">{new Date(tx.date).toLocaleDateString()}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">{tx.category}</span>
+                        {tx.category !== 'Settlement' && (
+                          <span className="text-xs text-zinc-500">• {tx.paidBy === 'A' ? partnerA : partnerB} paid</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
