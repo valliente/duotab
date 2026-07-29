@@ -37,7 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'DuoTab v1.101'
-          releaseBody: 'Release v1.101: Features category tagging, custom split ratios, CSV export, precision rounding fixes, and performance optimizations.'
+          releaseName: 'DuoTab v1.103'
+          releaseBody: 'Release v1.103: Smart receipt drag & drop parser, per-transaction custom split ratios, settlement audit logging, and search/filter controls.'
           releaseDraft: false
           prerelease: false
