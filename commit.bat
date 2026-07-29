@@ -1,4 +1,4 @@
 git add .
-git commit -m "feat(v1.103): add smart receipt drag & drop, custom split ratios, settlement tracking, and filters"
-git tag v1.103
+git commit -m "feat(v1.104): add print statements, batch entry, auto-backups, and theme switcher"
+git tag v1.104
 git push origin main --tags
