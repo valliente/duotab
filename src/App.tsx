@@ -306,6 +306,7 @@ export default function App() {
     }
   };
 
+  const handleDuplicate = (tx: Transaction) => { setDesc(tx.desc); setAmount(tx.amount.toString()); setCategory(tx.category); setTags(tx.tags || []); setTxSplitPreset(tx.splitRatio?.toString() || '50'); window.scrollTo({top:0, behavior:'smooth'}); descInputRef.current?.focus(); };
   const handleDelete = (id: string) => {
     const tx = transactions.find(t => t.id === id);
     if (tx) {
@@ -751,6 +752,7 @@ export default function App() {
                       {tx.category !== 'Settlement' && <div className="text-[10px] text-zinc-500">{tx.paidBy === 'A' ? partnerA : partnerB} paid</div>}
                     </div>
                     <button onClick={() => handleDelete(tx.id)} className="text-zinc-400 hover:text-red-500 dark:text-zinc-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1" title="Delete transaction"><Trash2 className={cn(isCompact ? "w-3.5 h-3.5" : "w-4 h-4")} /></button>
+                    <button onClick={() => handleDuplicate(tx)} className="text-zinc-400 hover:text-indigo-500 opacity-0 group-hover:opacity-100 p-1"><RefreshCw className={cn(isCompact ? "w-3.5 h-3.5" : "w-4 h-4")} /></button>
                   </div>
                 </div>
               ))
