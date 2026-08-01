@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Trash2, AlertCircle, RefreshCw, Wallet, Scale, Download, Upload, Save, CheckCircle, Undo2, LayoutList, Search, Image as ImageIcon, X, Printer, Moon, Sun, Monitor, Zap, BarChart2, QrCode, CheckSquare } from 'lucide-react';
 import { cn } from './utils';
+import confetti from 'canvas-confetti';
 
 type Transaction = {
   id: string;
@@ -337,6 +338,7 @@ export default function App() {
   const handleSettle = () => {
     if (netBalance === 0) return;
     saveUndoSnapshot(`Settled balance`);
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     
     const settleTx: Transaction = {
       id: crypto.randomUUID(),
