@@ -236,6 +236,8 @@ export default function App() {
   }, [transactions, showAnalytics]);
 
   const isBreakerActive = Math.abs(netBalance) >= threshold;
+  const isStale = useMemo(() => { if (activeLedger.length === 0) return false; const oldest = new Date(activeLedger[activeLedger.length-1].date).getTime(); return (Date.now() - oldest) > reminderDays * 86400000; }, [activeLedger, reminderDays]);
+  const showBreaker = isBreakerActive || isStale;
 
   const saveUndoSnapshot = (msg: string) => {
     setUndoAction({ transactions: [...transactions], message: msg });
