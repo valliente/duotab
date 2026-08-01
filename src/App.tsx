@@ -10,6 +10,7 @@ type Transaction = {
   category: string;
   date: string; 
   splitRatio?: number;
+  tags?: string[];
 };
 
 type UndoAction = {
@@ -52,6 +53,7 @@ export default function App() {
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Other');
+  const [tags, setTags] = useState<string[]>([]);
   const [txSplitPreset, setTxSplitPreset] = useState("50");
   const [txCustomSplit, setTxCustomSplit] = useState(50);
   
