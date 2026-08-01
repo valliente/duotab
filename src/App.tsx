@@ -509,8 +509,8 @@ export default function App() {
             <div className="relative h-4 bg-zinc-200 dark:bg-zinc-800 rounded-full mt-4 mb-2 overflow-hidden flex">
               <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-zinc-400 dark:bg-zinc-700 z-10" />
               <div 
-                className="h-full bg-gradient-to-r from-indigo-500 to-rose-500 transition-all duration-700 ease-out"
-                style={{ width: '100%', clipPath: `polygon(0 0, ${percentage}% 0, ${percentage}% 100%, 0 100%)` }}
+                className="h-full  transition-all duration-700 ease-out"
+                style={{ width: '100%', background: `linear-gradient(to right, ${colorA}, ${colorB})`, clipPath: `polygon(0 0, ${percentage}% 0, ${percentage}% 100%, 0 100%)` }}
               />
             </div>
             <div className="flex justify-between text-xs text-zinc-500 font-medium">
