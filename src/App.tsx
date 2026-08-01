@@ -578,6 +578,7 @@ export default function App() {
                 )}
               </div>
               <input placeholder="Tags (comma separated)" value={tags.join(', ')} onChange={(e) => setTags(e.target.value.split(',').map(t => t.trim()).filter(t => t))} className="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2 text-sm focus:border-indigo-500 outline-none transition-all" />
+              <textarea placeholder="Notes / Memo (optional)" value={memo} onChange={e => setMemo(e.target.value)} className="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2 text-sm focus:border-indigo-500 outline-none transition-all resize-none h-16" />
             </div>
 
             <div className="grid grid-cols-2 gap-2">
@@ -707,6 +708,7 @@ export default function App() {
                         {tx.category !== 'Settlement' && <span className="text-[10px] sm:text-xs text-zinc-500 whitespace-nowrap">• {tx.splitRatio ?? 50}/{100 - (tx.splitRatio ?? 50)}</span>}
                         {tx.tags?.map(tag => <span key={tag} className="text-[9px] bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 px-1 rounded">#{tag}</span>)}
                       </div>
+                      {tx.memo && <p className="text-xs text-zinc-500 mt-1 italic">{tx.memo}</p>}
                     </div>
                   </div>
                   <div className="flex items-center gap-3 pl-2 flex-shrink-0">
