@@ -38,6 +38,7 @@ export default function App() {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [venmoHandle, setVenmoHandle] = useState(() => localStorage.getItem('venmoHandle') || '');
   const [budgets, setBudgets] = useState<Record<string, number>>(() => JSON.parse(localStorage.getItem('budgets') || '{}'));
+  const [reminderDays, setReminderDays] = useState(() => Number(localStorage.getItem('reminderDays')) || 30);
   const [settleQRUrl, setSettleQRUrl] = useState<string | null>(null);
   
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
@@ -105,6 +106,7 @@ export default function App() {
     localStorage.setItem('isCompact', isCompact.toString());
     localStorage.setItem('venmoHandle', venmoHandle);
     localStorage.setItem('budgets', JSON.stringify(budgets));
+    localStorage.setItem('reminderDays', reminderDays.toString());
     localStorage.setItem('transactions', JSON.stringify(transactions));
     localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
   }, [partnerA, partnerB, threshold, isCompact, venmoHandle, transactions]);
@@ -507,7 +509,7 @@ export default function App() {
             </div>
           </div>
           <div>
-            <label className="text-xs text-zinc-500 uppercase font-semibold mb-1 flex items-center gap-1">Venmo / CashApp Receiver Handle <QrCode className="w-3.5 h-3.5"/></label>
+            <div className="flex justify-between items-center mb-2"><label className="text-xs text-zinc-500 uppercase font-semibold flex items-center gap-1">Venmo / CashApp Receiver Handle <QrCode className="w-3.5 h-3.5"/></label><span className="text-xs text-zinc-500">Reminder Days: <input type="number" value={reminderDays} onChange={e => setReminderDays(Number(e.target.value))} className="w-12 bg-zinc-100 dark:bg-zinc-950 border px-1 rounded"/></span></div>
             <input placeholder="@username" value={venmoHandle} onChange={(e) => setVenmoHandle(e.target.value)} className="w-full sm:w-1/2 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all" />
           </div>
           <div className="mt-4 grid grid-cols-3 gap-2">
