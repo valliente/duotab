@@ -68,6 +68,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   
   const [error, setError] = useState('');
+  const [budgetAlert, setBudgetAlert] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [undoAction, setUndoAction] = useState<UndoAction | null>(null);
 
@@ -266,6 +267,11 @@ export default function App() {
     setIsProcessing(true);
 
     saveUndoSnapshot(`Added ${desc.trim()}`);
+    if (budgets[category] > 0) {
+      const currTotal = monthlyAnalytics?.currCatMap[category] || 0;
+      if (currTotal + numAmount > budgets[category]) setBudgetAlert(`${category} budget exceeded!`);
+      else setBudgetAlert('');
+    }
     let ratioA = txSplitPreset === 'custom' ? txCustomSplit : Number(txSplitPreset);
 
     const tx: Transaction = {
@@ -560,6 +566,7 @@ export default function App() {
               )}
             </div>
             
+            {budgetAlert && <div className="mb-3 bg-orange-50 text-orange-600 px-3 py-2 rounded-lg text-sm flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {budgetAlert}</div>}
             {error && (
               <div className="mb-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 px-3 py-2 rounded-lg text-sm flex items-center gap-2 animate-in fade-in">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" /> <span className="leading-tight">{error}</span>
