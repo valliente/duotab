@@ -264,6 +264,7 @@ export default function App() {
       paidBy,
       category,
       date: new Date().toISOString(),
+      tags,
       splitRatio: ratioA
     };
     
@@ -571,6 +572,7 @@ export default function App() {
                   <input type="number" min="0" max="100" value={txCustomSplit} onChange={(e) => setTxCustomSplit(Math.min(100, Math.max(0, Number(e.target.value))))} className="w-12 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-1 py-0.5 text-xs text-center" title={`${partnerA}'s %`} />
                 )}
               </div>
+              <input placeholder="Tags (comma separated)" value={tags.join(', ')} onChange={(e) => setTags(e.target.value.split(',').map(t => t.trim()).filter(t => t))} className="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2 text-sm focus:border-indigo-500 outline-none transition-all" />
             </div>
 
             <div className="grid grid-cols-2 gap-2">
