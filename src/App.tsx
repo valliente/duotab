@@ -206,6 +206,7 @@ export default function App() {
 
   const maxScale = useMemo(() => Math.max(threshold, Math.abs(netBalance) + 10), [threshold, netBalance]);
   
+  const weeklyDelta = useMemo(() => { const now = Date.now(); const week = 7*86400000; let curr = 0; let prev = 0; transactions.forEach(tx => { if (tx.category === 'Settlement') return; const time = new Date(tx.date).getTime(); if (now - time < week) curr += tx.amount; else if (now - time < week * 2) prev += tx.amount; }); return { curr, prev, diff: curr - prev }; }, [transactions]);
   const monthlyAnalytics = useMemo(() => {
     if (!showAnalytics) return null;
     const now = new Date();
@@ -528,6 +529,14 @@ export default function App() {
         </div>
 
         <div className="flex flex-col md:flex-row gap-6">
+          {/* Weekly Delta Mini Bar */}
+          <div className="bg-white/50 dark:bg-zinc-900/50 rounded p-2 text-xs text-center border shadow-sm">
+            This Week: <strong>${weeklyDelta.curr.toFixed(2)}</strong> | Last Week: <strong>${weeklyDelta.prev.toFixed(2)}</strong>
+            <span className={weeklyDelta.diff > 0 ? 'text-red-500 ml-2' : 'text-emerald-500 ml-2'}>
+              {weeklyDelta.diff > 0 ? '+' : ''}{weeklyDelta.diff.toFixed(2)}
+            </span>
+          </div>
+
           {/* Tug of War Scale */}
           <div className="bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xl text-center relative overflow-hidden flex-1 flex flex-col justify-center transition-colors">
             <h2 className="text-lg font-medium mb-2">{bannerText}</h2>
