@@ -37,6 +37,7 @@ export default function App() {
   const [isBatchMode, setIsBatchMode] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [venmoHandle, setVenmoHandle] = useState(() => localStorage.getItem('venmoHandle') || '');
+  const [budgets, setBudgets] = useState<Record<string, number>>(() => JSON.parse(localStorage.getItem('budgets') || '{}'));
   const [settleQRUrl, setSettleQRUrl] = useState<string | null>(null);
   
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
@@ -101,6 +102,7 @@ export default function App() {
     localStorage.setItem('threshold', threshold.toString());
     localStorage.setItem('isCompact', isCompact.toString());
     localStorage.setItem('venmoHandle', venmoHandle);
+    localStorage.setItem('budgets', JSON.stringify(budgets));
     localStorage.setItem('transactions', JSON.stringify(transactions));
   }, [partnerA, partnerB, threshold, isCompact, venmoHandle, transactions]);
 
@@ -495,6 +497,14 @@ export default function App() {
           <div>
             <label className="text-xs text-zinc-500 uppercase font-semibold mb-1 flex items-center gap-1">Venmo / CashApp Receiver Handle <QrCode className="w-3.5 h-3.5"/></label>
             <input placeholder="@username" value={venmoHandle} onChange={(e) => setVenmoHandle(e.target.value)} className="w-full sm:w-1/2 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all" />
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            {CATEGORIES.map(c => (
+              <div key={c} className="text-xs">
+                <label className="block text-zinc-500">{c} Cap $</label>
+                <input type="number" value={budgets[c] || ''} onChange={e => setBudgets({...budgets, [c]: Number(e.target.value)})} className="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 outline-none"/>
+              </div>
+            ))}
           </div>
         </div>
 
