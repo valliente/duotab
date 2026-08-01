@@ -29,6 +29,8 @@ const formatCurrency = (val: number) =>
 export default function App() {
   const [partnerA, setPartnerA] = useState(() => localStorage.getItem('partnerA') || 'You');
   const [partnerB, setPartnerB] = useState(() => localStorage.getItem('partnerB') || 'Partner');
+  const [colorA, setColorA] = useState(() => localStorage.getItem('colorA') || '#6366f1');
+  const [colorB, setColorB] = useState(() => localStorage.getItem('colorB') || '#f43f5e');
   const [threshold, setThreshold] = useState(() => Number(localStorage.getItem('threshold')) || 100);
   const [isCompact, setIsCompact] = useState(() => localStorage.getItem('isCompact') === 'true');
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'dark');
@@ -94,6 +96,8 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('partnerA', partnerA);
     localStorage.setItem('partnerB', partnerB);
+    localStorage.setItem('colorA', colorA);
+    localStorage.setItem('colorB', colorB);
     localStorage.setItem('threshold', threshold.toString());
     localStorage.setItem('isCompact', isCompact.toString());
     localStorage.setItem('venmoHandle', venmoHandle);
@@ -480,11 +484,11 @@ export default function App() {
           </div>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="text-xs text-zinc-500 uppercase font-semibold mb-1 block">Partner A</label>
+              <label className="text-xs text-zinc-500 uppercase font-semibold mb-1 flex justify-between">Partner A <input type="color" value={colorA} onChange={e => setColorA(e.target.value)} className="w-4 h-4 rounded cursor-pointer"/></label>
               <input value={partnerA} onChange={(e) => setPartnerA(e.target.value)} className="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all" />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 uppercase font-semibold mb-1 block">Partner B</label>
+              <label className="text-xs text-zinc-500 uppercase font-semibold mb-1 flex justify-between">Partner B <input type="color" value={colorB} onChange={e => setColorB(e.target.value)} className="w-4 h-4 rounded cursor-pointer"/></label>
               <input value={partnerB} onChange={(e) => setPartnerB(e.target.value)} className="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-all" />
             </div>
           </div>
