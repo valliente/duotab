@@ -694,7 +694,8 @@ export default function App() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onBlur={() => { if(searchQuery && !searchHistory.includes(searchQuery)) setSearchHistory([searchQuery, ...searchHistory].slice(0, 5)); }} list="search-history" className="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg pl-8 pr-3 py-1.5 text-xs focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-500 outline-none text-zinc-800 dark:text-zinc-300"
                 />
-              <datalist id="search-history">{searchHistory.map(h => <option key={h} value={h} />)}</datalist>
+              {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-2 top-2 text-zinc-400"><X className="w-3 h-3"/></button>}
+                <datalist id="search-history">{searchHistory.map(h => <option key={h} value={h} />)}</datalist>
               </div>
               <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-800 hidden sm:block"></div>
               {allTags.length > 0 && <select value={tagFilter} onChange={e => setTagFilter(e.target.value)} className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2 py-1 text-xs outline-none ml-2 mr-2"><option value="All">All Tags</option>{allTags.map(t => <option key={t} value={t}>{t}</option>)}</select>}
