@@ -703,6 +703,7 @@ export default function App() {
                         <span className="text-[10px] sm:text-xs text-zinc-500 whitespace-nowrap">{new Date(tx.date).toLocaleDateString()}</span>
                         <span className={cn("text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full whitespace-nowrap border", tx.category === 'Settlement' ? "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20" : "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-transparent")}>{tx.category}</span>
                         {tx.category !== 'Settlement' && <span className="text-[10px] sm:text-xs text-zinc-500 whitespace-nowrap">• {tx.splitRatio ?? 50}/{100 - (tx.splitRatio ?? 50)}</span>}
+                        {tx.tags?.map(tag => <span key={tag} className="text-[9px] bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 px-1 rounded">#{tag}</span>)}
                       </div>
                     </div>
                   </div>
