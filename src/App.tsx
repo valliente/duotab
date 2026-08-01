@@ -626,6 +626,7 @@ export default function App() {
                       <div className="h-3 bg-indigo-500 rounded-r transition-all duration-1000 ease-out flex items-center justify-end pr-1" style={{ width: cWidth }}>
                         <span className="text-[10px] text-white font-medium">{cVal > 0 ? formatCurrency(cVal) : ''}</span>
                       </div>
+                      {budgets[cat] > 0 && <div className="h-1 bg-red-500/50 mt-1" style={{ width: `${Math.min((cVal / budgets[cat]) * 100, 100)}%` }} />}
                       <div className="h-2 bg-zinc-300 dark:bg-zinc-700 rounded-r transition-all duration-1000 ease-out" style={{ width: pWidth }} />
                     </div>
                   </div>
