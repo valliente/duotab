@@ -58,6 +58,8 @@ export default function App() {
   const [txCustomSplit, setTxCustomSplit] = useState(50);
   
   const [categoryFilter, setCategoryFilter] = useState('All');
+  const [tagFilter, setTagFilter] = useState<string>('All');
+  const allTags = useMemo(() => Array.from(new Set(transactions.flatMap(t => t.tags || []))), [transactions]);
   const [searchQuery, setSearchQuery] = useState('');
   
   const [error, setError] = useState('');
@@ -119,6 +121,7 @@ export default function App() {
 
   const filteredTransactions = useMemo(() => {
     let result = transactions;
+    if (tagFilter !== 'All') { result = result.filter(tx => (tx.tags || []).includes(tagFilter)); }
     if (categoryFilter !== 'All') {
       result = result.filter(tx => tx.category === categoryFilter);
     }
@@ -662,6 +665,7 @@ export default function App() {
                 />
               </div>
               <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-800 hidden sm:block"></div>
+              {allTags.length > 0 && <select value={tagFilter} onChange={e => setTagFilter(e.target.value)} className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2 py-1 text-xs outline-none ml-2 mr-2"><option value="All">All Tags</option>{allTags.map(t => <option key={t} value={t}>{t}</option>)}</select>}
               <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
                 {['All', ...CATEGORIES, 'Settlement'].map(c => (
                   <button key={c} onClick={() => setCategoryFilter(c)} className={cn("px-2.5 py-1 rounded-md text-xs whitespace-nowrap transition-colors", categoryFilter === c ? "bg-zinc-800 dark:bg-zinc-700 text-white font-medium" : "bg-zinc-100 dark:bg-zinc-950/50 text-zinc-600 dark:text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-300")}>{c}</button>
