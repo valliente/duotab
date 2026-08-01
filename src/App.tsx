@@ -146,6 +146,10 @@ export default function App() {
         e.preventDefault();
         descInputRef.current?.focus();
       }
+      if (['1','2','3','4','5','6'].includes(e.key) && document.activeElement === descInputRef.current) {
+        e.preventDefault();
+        setCategory(CATEGORIES[parseInt(e.key)-1]);
+      }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
         // Only select all if focus is not in an input
         if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
