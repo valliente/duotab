@@ -40,6 +40,8 @@ export default function App() {
   const [venmoHandle, setVenmoHandle] = useState(() => localStorage.getItem('venmoHandle') || '');
   const [budgets, setBudgets] = useState<Record<string, number>>(() => JSON.parse(localStorage.getItem('budgets') || '{}'));
   const [reminderDays, setReminderDays] = useState(() => Number(localStorage.getItem('reminderDays')) || 30);
+  const [pin, setPin] = useState(() => localStorage.getItem('pin') || '');
+  const [isUnlocked, setIsUnlocked] = useState(!localStorage.getItem('pin'));
   const [settleQRUrl, setSettleQRUrl] = useState<string | null>(null);
   
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
@@ -108,6 +110,7 @@ export default function App() {
     localStorage.setItem('venmoHandle', venmoHandle);
     localStorage.setItem('budgets', JSON.stringify(budgets));
     localStorage.setItem('reminderDays', reminderDays.toString());
+    localStorage.setItem('pin', pin);
     localStorage.setItem('transactions', JSON.stringify(transactions));
     localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
   }, [partnerA, partnerB, threshold, isCompact, venmoHandle, transactions]);
@@ -130,7 +133,9 @@ export default function App() {
         console.error("Backup failed", e);
       }
     }, 1000);
-    return () => clearTimeout(timeout);
+    if (!isUnlocked) return <div className="h-screen flex items-center justify-center"><div className="p-8 bg-white dark:bg-zinc-900 rounded-xl shadow-xl text-center"><h2>Enter PIN</h2><input type="password" onChange={e => { if (e.target.value === pin) setIsUnlocked(true); }} className="border px-2 py-1 mt-2 rounded"/></div></div>;
+
+  return () => clearTimeout(timeout);
   }, [transactions, partnerA, partnerB, threshold]);
 
   const filteredTransactions = useMemo(() => {
@@ -509,6 +514,7 @@ export default function App() {
               <label className="text-xs text-zinc-500 uppercase font-semibold mb-1 flex justify-between">Partner A <input type="color" value={colorA} onChange={e => setColorA(e.target.value)} className="w-4 h-4 rounded cursor-pointer"/></label>
               <input value={partnerA} onChange={(e) => setPartnerA(e.target.value)} className="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all" />
             </div>
+            <div><label className="text-xs text-zinc-500 uppercase font-semibold mb-1 block">Privacy PIN</label><input type="password" value={pin} onChange={e => setPin(e.target.value)} placeholder="Leave blank to disable" className="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2 text-sm"/></div>
             <div>
               <label className="text-xs text-zinc-500 uppercase font-semibold mb-1 flex justify-between">Partner B <input type="color" value={colorB} onChange={e => setColorB(e.target.value)} className="w-4 h-4 rounded cursor-pointer"/></label>
               <input value={partnerB} onChange={(e) => setPartnerB(e.target.value)} className="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-all" />
