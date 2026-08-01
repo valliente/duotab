@@ -37,7 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'DuoTab v1.105'
-          releaseBody: 'Release v1.105: Venmo/CashApp deep-linking & QR codes, month-over-month analytics, bulk ledger operations, and scroll preservation.'
+          releaseName: 'DuoTab v1.106'
+          releaseBody: 'Release v1.106: Custom themes, category budgets, search history, hotkeys, memos, tags, auto-settlement reminders.'
           releaseDraft: false
           prerelease: false
