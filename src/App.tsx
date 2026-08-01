@@ -188,7 +188,7 @@ export default function App() {
     const activeTransactions = latestSettlementIndex !== -1 ? transactions.slice(0, latestSettlementIndex) : transactions;
     const rawBalance = activeTransactions.reduce((acc, tx) => {
       const ratioA = tx.splitRatio ?? 50;
-      const val = tx.paidBy === 'A' ? tx.amount * ((100 - ratioA) / 100) : -tx.amount * (ratioA / 100);
+      const val = tx.paidBy === 'A' ? Math.round((tx.amount * ((100 - ratioA) / 100) + Number.EPSILON) * 100) / 100 : Math.round((-tx.amount * (ratioA / 100) + Number.EPSILON) * 100) / 100;
       return acc + val;
     }, 0);
     return Math.round((rawBalance + Number.EPSILON) * 100) / 100;
