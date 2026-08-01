@@ -420,7 +420,7 @@ export default function App() {
           if (state.partnerB) setPartnerB(state.partnerB);
           if (state.threshold) setThreshold(state.threshold);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         alert("Invalid backup file: " + err.message);
       }
     };
